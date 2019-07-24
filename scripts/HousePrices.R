@@ -1,6 +1,6 @@
 ####0. Libraries and directories####
 pacman::p_load(DT, dplyr, caret, dplyr, ggplot2, lattice, 
-               rstudioapi, Hmisc)
+               rstudioapi, Hmisc, corrplot)
 
 #setting up directory
 current_path=getActiveDocumentContext()$path
@@ -53,3 +53,20 @@ train[is.na(train)] <- 0
 corr<- train %>% select_if(is.numeric) %>%  cor()
 col<- colorRampPalette(c("blue", "white", "red"))(20)
 heatmap(corr, col=col, symm=TRUE, na.rm=TRUE, Rowv = NA)
+
+#High correlation variables
+corr_names<-findCorrelation(corr, cutoff = .6, exact = TRUE, names = TRUE)
+corr_high<- cor(train[corr_names])
+col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#FE9929"))
+corrplot(corr_high, method = "color", col = col(200), order = "hclust", number.cex = .7,
+         addCoef.col = "black", tl.col = "black", tl.srt = 80, diag = FALSE)
+
+# OverallQual', 'GrLivArea' and 'TotalBsmtSF' are strongly correlated with 'SalePrice'.
+# 'GarageCars' and 'GarageArea' are also some of the most strongly correlated variables.
+# we just need one of these  (we can keep 'GarageCars' since its correlation with 'SalePrice' is higher).
+
+#scatter plot of the variables
+plot(train[corr_names],  col  = rainbow(25) )
+# between 'TotalBsmtSF' and 'GrLiveArea the dots draw a linear line, like a border
+
+
